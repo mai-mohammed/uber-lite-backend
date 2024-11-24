@@ -93,3 +93,42 @@
       "latitude": "<driver_latitude>"
   }
   ```
+
+---
+
+### Key Questions and Focus Areas
+
+#### **How can we manage system overload from frequent driver location updates while ensuring location accuracy?**
+
+1. **High Write Operations:**
+   - Location updates are core to the matching process and the success of the system.
+   - With high writes per second due to frequent driver location updates, the process must be **fast and efficient**.
+   - **Meaningful/Adaptive Updates**:
+     - Update locations only when the driver is on work/available for ride requests.
+     - Updates should be **adaptive** based on the driver's speed:
+       - **High Speed**: Frequent updates at smaller time intervals to maintain accuracy.
+       - **Low Speed**: Reduce update frequency to avoid unnecessary writes.
+   - Consider how sensor data from devices (e.g., GPS, accelerometers) can help optimize update intervals.
+
+---
+
+#### **How do we handle efficient proximity searches on location data?**
+
+1. **Low-Latency Matching Process:**
+   - The matching process needs to be fast to retrieve drivers efficiently.
+
+2. **Database Options for Proximity Searches:**
+   - **Relational Database (Pure Approach):**
+     - Requires a **full scan** of the driver location table for calculations.
+     - Adding indexes can help but raises questions about:
+       - Frequency of index updates.
+       - Handling of geographical coordinates with index tree structures.
+   - **Redis for Geospatial Data:**
+     - Redis provides:
+       - Tools for handling geographical coordinates.
+       - Algorithms optimized for proximity searches and geospatial data.
+       - High write speed to accommodate frequent updates.
+     - Considerations for Redis:
+       - Explore **durability** concerns. Reference: [Durable Redis](https://redis.io/technology/durable-redis/).
+
+---
