@@ -2,24 +2,65 @@
 
 ## Functional Features
 
-### Core
-- The user should be able to choose the payment method.
-- The rider should be able to define a destination for the trip and have a fare estimation from Uber side.
-- The rider should be able to confirm the trip with the defined destination and fare.
-- The rider should be matched with the nearest drivers.
-- The driver should be notified by ride request with the ability to accept/deny within defined time 10s.
-- The location of the driver should be tracked while he is in work state, which is the cornerstone of the matching process.
+### User Journeys and Requirements
 
-### Secondary
-- The rider can have the ability to choose the type of vehicle that suits him / The driver can have the ability to class his vehicle(s).
-- The rider/driver can have the ability to rate the driver/rider, and that rate can take place in internal implementation.
-- The driver should receive/handle one trip at a time, no multiple rides simultaneously.
+#### **Rider Journey: Booking a Ride**
+1. **Setting Up the Trip**:
+   - The rider should be able to define a destination and get a fare estimation from Uber.
+   - The rider should be able to choose a payment method for the trip.
+   
+2. **Confirming the Ride**:
+   - The rider should be able to confirm the trip with the defined destination and fare.
+
+3. **Waiting for Matching**:
+   - The rider should be matched with the nearest available driver.
+   - The driver should be notified of the ride request and have the ability to accept or deny it within 10 seconds.
+
+4. **Tracking the Driver**:
+   - The rider should be able to track the driver's real-time location until pickup and during the ride.
+
+5. **Completing the Ride**:
+   - The rider should have the ability to rate the driver after the trip.
+
+#### **Driver Journey: Accepting and Completing a Ride**
+1. **Setting Availability**:
+   - The driver should be able to set their status to "available" to start receiving ride requests.
+
+2. **Receiving Ride Requests**:
+   - The driver should be notified of a ride request with relevant details (e.g., pickup location) and have the ability to accept or deny the request within 10 seconds.
+
+3. **Providing Location Updates**:
+   - The driver's location should be tracked in real time to enable efficient matching and rider tracking.
+
+4. **Handling the Ride**:
+   - The driver should only be allowed to handle one ride at a time, avoiding conflicts from multiple requests.
+
+5. **Completing the Ride**:
+   - The driver should have the ability to mark the ride as completed and provide feedback about the rider.
+
+---
+
+### Summarized Functional Features
+
+#### Core
+- The rider can define a destination, choose a payment method, and confirm a trip with a fare estimation.
+- The system should match the rider with the nearest driver efficiently.
+- The driver should receive ride requests and be able to accept/deny within 10 seconds.
+- The driver’s real-time location should be tracked and updated throughout the trip.
+- Riders and drivers can provide feedback (ratings) after the trip.
+
+#### Secondary
+- Riders can select a vehicle type that suits their preferences, while drivers can classify their vehicles.
+- Drivers should handle only one trip at a time, ensuring focus and efficiency.
+
+---
 
 ## Non-Functional Features
 
 ### Core
-- The matching between the rider and the nearest driver should be efficient and fast.
-- The location updates should be handled in a manner that guarantees useful and quick writes.
+- **Efficiency**: The system must ensure fast and accurate matching between riders and drivers, minimizing waiting times.
+- **Location Updates**: Location data should be handled in a way that optimizes performance with quick, meaningful writes, such as adapting update frequency based on driver speed or proximity to the rider.
+
 
 ## Entities
 
