@@ -1,0 +1,155 @@
+{
+	"info": {
+		"_postman_id": "ddd7eea1-2dec-4f21-8179-6842b3ea9c23",
+		"name": "uber-lite",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "39673217",
+		"_collection_link": "https://test22-5229.postman.co/workspace/1aac9030-a1b7-4a34-8616-5691c3a46a90/collection/39673217-ddd7eea1-2dec-4f21-8179-6842b3ea9c23?action=share&source=collection_link&creator=39673217"
+	},
+	"item": [
+		{
+			"name": "User",
+			"item": [
+				{
+					"name": "register",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Test\",\n    \"email\": \"test@example.com\",\n    \"password\": \"123456\",\n    \"role\": \"user\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{uber-lite-base}}/api/users/register",
+							"host": [
+								"{{uber-lite-base}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "login",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"test@example.com\",\n    \"password\": \"123456\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{uber-lite-base}}/api/users/login",
+							"host": [
+								"{{uber-lite-base}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "logout",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{uber-lite-token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{uber-lite-base}}/api/users/logout",
+							"host": [
+								"{{uber-lite-base}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"logout"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Fare",
+			"item": [
+				{
+					"name": "get fare estimation",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{uber-lite-token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"source\": \"Location A\",\n    \"destination\": \"Location B\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{uber-lite-base}}/api/fares",
+							"host": [
+								"{{uber-lite-base}}"
+							],
+							"path": [
+								"api",
+								"fares"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "uber-lite-base",
+			"value": "localhost:4000",
+			"type": "default"
+		},
+		{
+			"key": "uber-lite-token",
+			"value": "",
+			"type": "default"
+		}
+	]
+}
