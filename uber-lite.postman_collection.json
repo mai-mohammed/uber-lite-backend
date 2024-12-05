@@ -4,7 +4,7 @@
 		"name": "uber-lite",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "39673217",
-		"_collection_link": "https://test22-5229.postman.co/workspace/1aac9030-a1b7-4a34-8616-5691c3a46a90/collection/39673217-ddd7eea1-2dec-4f21-8179-6842b3ea9c23?action=share&source=collection_link&creator=39673217"
+		"_collection_link": "https://test22-5229.postman.co/workspace/Test-Workspace~1aac9030-a1b7-4a34-8616-5691c3a46a90/collection/39673217-ddd7eea1-2dec-4f21-8179-6842b3ea9c23?action=share&source=collection_link&creator=39673217"
 	},
 	"item": [
 		{
@@ -132,6 +132,49 @@
 							"path": [
 								"api",
 								"fares"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Ride",
+			"item": [
+				{
+					"name": "confirm ride",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{uber-lite-token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"rideId\" : 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{uber-lite-base}}/api/rides/confirm",
+							"host": [
+								"{{uber-lite-base}}"
+							],
+							"path": [
+								"api",
+								"rides",
+								"confirm"
 							]
 						}
 					},

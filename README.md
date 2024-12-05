@@ -108,7 +108,7 @@
   ```
 
 ### Get Fare Estimation
-- **Endpoint**: `/fare`
+- **Endpoint**: `/fares`
 - **Method**: POST
 - **Request Body**:
   ```json
@@ -124,7 +124,7 @@
 - **Request Body**:
   ```json
   {
-      "fareId": "<fare_id>"
+      "rideId": "<ride_id>"
   }
   ```
 

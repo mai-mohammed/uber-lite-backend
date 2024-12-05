@@ -7,12 +7,11 @@ describe('User Routes', () => {
     let token;
 
     beforeAll(() => {
-        userService.users.length = 0;
-        userService.users.push({
+        userService.createUser({
             id: 1,
             name: 'Mai Moh',
             email: 'mai@example.com',
-            password: bcrypt.hashSync('123456', 10),
+            password: '123456',
             role: 'rider',
         });
     });
@@ -41,7 +40,6 @@ describe('User Routes', () => {
     });
 
     it('should log out a user by invalidating the token', async () => {
-        console.log(token);
         const response = await request(app)
             .post('/api/users/logout')
             .set('Authorization', `Bearer ${token}`);

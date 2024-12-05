@@ -1,19 +1,18 @@
-let fares = [];
+const fares = [];
 
 export const calculateFare = (source, destination) => {
-    const baseFare = 5; // Fixed base fare
-    const ratePerKm = 2; // Cost per kilometer
-
-    // Mock distance calculation (for now, always return 10 km)
-    const distanceInKm = 10;
-
+    const baseFare = 5;
+    const ratePerKm = 2;
+    const distanceInKm = 10; // Mock distance calculation
     return baseFare + distanceInKm * ratePerKm;
 };
 
-export const saveFareDetails = (userId, source, destination, fare) => {
-    const fareDetail = { id: fares.length + 1, userId, source, destination, fare, timestamp: new Date() };
-    fares.push(fareDetail);
-    return fareDetail;
+export const createFare = (userId, fareEstimation) => {
+    const fare = { id: fares.length + 1, userId, fare: fareEstimation, timestamp: new Date() };
+    fares.push(fare);
+    return fare;
 };
 
-export default { calculateFare, saveFareDetails, fares };
+export const getFares = () => fares;
+
+export default { calculateFare, createFare, getFares };

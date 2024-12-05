@@ -4,15 +4,27 @@ import { generateToken } from '../utils/jwt.js';
 const users = [];
 let blacklistedTokens = [];
 
+
+const createUser = ({ id, name, email, password, role }) => {
+    const hashedPassword = bcrypt.hashSync(password, 10);
+    const newUser = { id, name, email, password: hashedPassword, role };
+    users.push(newUser);
+    return newUser;
+};
+
 export const registerUser = ({ name, email, password, role }) => {
     const existingUser = users.find((user) => user.email === email);
     if (existingUser) {
         throw new Error('User already exists');
     }
 
-    const hashedPassword = bcrypt.hash(password, 10);
-    const newUser = { id: users.length + 1, name, email, password: hashedPassword, role };
-    users.push(newUser);
+    const newUser = createUser({
+        id: users.length + 1,
+        name,
+        email,
+        password,
+        role,
+    });
     return newUser;
 };
 
@@ -40,4 +52,6 @@ export const isTokenBlacklisted = (token) => {
     return blacklistedTokens.includes(token);
 };
 
-export default { registerUser, loginUser, logoutUser, isTokenBlacklisted, users };
+export const getUsers = () => users;
+
+export default { registerUser, loginUser, logoutUser, isTokenBlacklisted, getUsers, createUser };
