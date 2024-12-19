@@ -12,13 +12,14 @@ app.use('/api/rides', rideRoutes);
 app.use((err, req, res, next) => {
     const isDev = process.env.NODE_ENV === 'development';
 
-    console.error(err);
+    if (isDev) console.error(err);
 
-    res.status(err.status || 500).json(
-        isDev
-            ? { error: { message: err.message || 'Internal Server Error', stack: err.stack } }
-            : { error: 'Internal Server Error' }
-    );
+    const status = err.status || 500;
+    const response = isDev
+        ? { error: { message: err.message || 'Internal Server Error', stack: err.stack } }
+        : { error: err.message || 'Internal Server Error' };
+
+    res.status(status).json(response);
 });
 
 export default app;

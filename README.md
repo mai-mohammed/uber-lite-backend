@@ -64,24 +64,26 @@
 - Location data should be handled in a way that optimizes performance with quick, meaningful writes, such as adapting update frequency based on driver speed or proximity to the rider.
 
 
-## Entities [initial-state]
+Here’s the updated **README** section with the requested structure:
 
-### Rider
+---
+
+## Entities (Updated Schema)
+
+### User
 - `id`
 - `name`
+- `role`
 - `status`
-
-### Driver
-- `id`
-- `name`
 
 ### Ride
 - `id`
 - `fare_id`
-- `rider_id`
+- `user_id`
 - `driver_id`
 - `source`
 - `destination`
+- `status`
 
 ### Fare
 - `id`
@@ -89,10 +91,10 @@
 - `fare_estimation`
 
 ### Location
-- `driver_id`
+- `user_id`
 - `longitude`
 - `latitude`
-
+  
 ## APIs
 
 
@@ -119,7 +121,7 @@
   ```
 
 ### Confirm the Ride
-- **Endpoint**: `/rides`
+- **Endpoint**: `/rides/confirm`
 - **Method**: POST
 - **Request Body**:
   ```json

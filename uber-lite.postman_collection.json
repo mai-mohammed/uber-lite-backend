@@ -117,7 +117,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"source\": \"Location A\",\n    \"destination\": \"Location B\"\n}",
+							"raw": "{\n    \"source\": { \"latitude\": 40.7359, \"longitude\": -73.9911 },\n    \"destination\": { \"latitude\": 40.748817, \"longitude\": -73.985428 }\n}\n",
 							"options": {
 								"raw": {
 									"language": "json"

@@ -8,17 +8,7 @@ export const confirmRide = (req, res, next) => {
             return res.status(400).json({ error: 'Ride ID is required' });
         }
 
-        const ride = rideService.getRides().find((r) => r.id === rideId);
-
-        if (!ride) {
-            return res.status(404).json({ error: 'Ride not found' });
-        }
-
-        if (ride.status !== 'not-confirmed') {
-            return res.status(400).json({ error: 'Ride has already been confirmed or completed' });
-        }
-
-        ride.status = 'pending';
+        const ride = rideService.confirmRide(rideId);
 
         res.status(200).json({ ...ride });
     } catch (error) {

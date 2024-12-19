@@ -4,8 +4,14 @@ export const getFareEstimation = (req, res, next) => {
     try {
         const { source, destination } = req.body;
 
-        if (!req.user.id || !source || !destination) {
-            return res.status(400).json({ error: 'Source and destination are required' });
+        // Validate source and destination
+        const isValidLocation = (location) =>
+            location &&
+            typeof location.latitude === 'number' &&
+            typeof location.longitude === 'number';
+
+        if (!req.user?.id || !isValidLocation(source) || !isValidLocation(destination)) {
+            return res.status(400).json({ error: 'Invalid source or destination. Latitude and longitude are required.' });
         }
 
         const fareEstimation = fareService.calculateFare(source, destination);
@@ -13,8 +19,6 @@ export const getFareEstimation = (req, res, next) => {
 
         const ride = rideService.createRide(req.user.id, source, destination, fare.id);
 
-        // matching logic here 
-        
         res.status(200).json({ fare, ride });
     } catch (error) {
         next(error);
