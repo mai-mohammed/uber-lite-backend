@@ -68,7 +68,9 @@ Here’s the updated **README** section with the requested structure:
 
 ---
 
-## Entities (Updated Schema)
+## Entities
+
+![Entities Diagram](./diagrams/entities.png)
 
 ### User
 - `id`
