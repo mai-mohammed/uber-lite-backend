@@ -13,7 +13,7 @@ const createUser = ({ id, name, email, password, role, status }) => {
     return newUser;
 };
 
-export const registerUser = ({ name, email, password, role }) => {
+export const registerUser = ({ name, email, password, role, status }) => {
     const existingUser = users.find((user) => user.email === email);
     if (existingUser) {
         throw createError(409, 'User already exists');
@@ -25,7 +25,7 @@ export const registerUser = ({ name, email, password, role }) => {
         email,
         password,
         role,
-        status: UserStatus.ACTIVE,
+        status: status || UserStatus.ACTIVE,
     });
     return newUser;
 };
@@ -58,10 +58,24 @@ export const getAvailableDrivers = () => {
     const availableDrivers = users
         .filter(user => user.role === 'driver' && user.status === UserStatus.AVAILABLE)
         .map(driver => driver.id);
-    console.log('Available drivers in getAvailableDrivers:', availableDrivers);
     return availableDrivers;
+};
+
+export const updateUser = (userId, userData) => {
+    const userIndex = users.findIndex(user => user.id === userId);
+    if (userIndex === -1) {
+        throw createError(404, 'User not found');
+    }
+
+    // Update only the provided fields
+    users[userIndex] = {
+        ...users[userIndex],
+        ...userData
+    };
+
+    return users[userIndex];
 };
 
 export const getUsers = () => users;
 
-export default { registerUser, loginUser, logoutUser, isTokenBlacklisted, getUsers, createUser, getAvailableDrivers };
+export default { registerUser, loginUser, logoutUser, isTokenBlacklisted, getUsers, createUser, getAvailableDrivers, updateUser };

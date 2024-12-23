@@ -1,5 +1,6 @@
-import { locationService } from './index.js';
+import { locationService, userService } from './index.js';
 import createError from 'http-errors';
+import UserStatus from '../enums/userStatus.js';
 
 const rides = [];
 
@@ -27,6 +28,8 @@ export const confirmRide = (rideId) => {
 
     const nearestDriver = locationService.matchDriver(ride.source);
     if (!nearestDriver) throw createError(400, 'No available drivers');
+
+    userService.updateUser(nearestDriver.driver_id, { status: UserStatus.BUSY });
 
     ride.driverId = nearestDriver.driver_id;
     ride.status = 'pending';
