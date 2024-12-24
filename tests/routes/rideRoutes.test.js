@@ -3,6 +3,7 @@ import app from '../../src/app.js';
 import { userService, rideService, fareService, locationService } from '../../src/services/index.js';
 import { generateToken } from '../../src/utils/jwt.js';
 import UserStatus from '../../src/enums/userStatus.js';
+import RideStatus from '../../src/enums/rideStatus.js';
 
 describe('Ride Routes', () => {
     const testRider = {
@@ -63,7 +64,7 @@ describe('Ride Routes', () => {
                 .send({ rideId: ride.id });
             expect(response.status).toBe(200);
             expect(response.body).toHaveProperty('id', ride.id);
-            expect(response.body).toHaveProperty('status', 'pending');
+            expect(response.body).toHaveProperty('status', RideStatus.PENDING);
         });
 
         it('should return 404 for non-existent ride', async () => {
@@ -81,6 +82,57 @@ describe('Ride Routes', () => {
                 .send({ rideId: ride.id });
 
             expect(response.status).toBe(401);
+        });
+    });
+
+    describe('POST /api/rides/:rideId/complete', () => {
+        let driverToken;
+
+        beforeEach(async () => {
+            // Generate token for driver
+            driverToken = generateToken({
+                id: testDriver.id,
+                email: testDriver.email,
+                role: testDriver.role
+            });
+
+            await request(app)
+                .post('/api/rides/confirm')
+                .set('Authorization', `Bearer ${token}`)
+                .send({ rideId: ride.id });
+        });
+
+        it('should complete ride successfully', async () => {
+            const response = await request(app)
+                .post(`/api/rides/${ride.id}/complete`)
+                .set('Authorization', `Bearer ${driverToken}`);
+
+            expect(response.status).toBe(200);
+            expect(response.body).toHaveProperty('message', 'Ride completed successfully');
+            expect(response.body.ride).toHaveProperty('status', RideStatus.COMPLETED);
+            expect(response.body.ride).toHaveProperty('completedAt');
+        });
+
+        it('should return 403 when non-assigned driver tries to complete ride', async () => {
+            const wrongDriverToken = generateToken({
+                id: 999,
+                email: 'wrong@driver.com',
+                role: 'driver'
+            });
+
+            const response = await request(app)
+                .post(`/api/rides/${ride.id}/complete`)
+                .set('Authorization', `Bearer ${wrongDriverToken}`);
+
+            expect(response.status).toBe(403);
+        });
+
+        it('should return 404 for non-existent ride', async () => {
+            const response = await request(app)
+                .post('/api/rides/999/complete')
+                .set('Authorization', `Bearer ${driverToken}`);
+
+            expect(response.status).toBe(404);
         });
     });
 });

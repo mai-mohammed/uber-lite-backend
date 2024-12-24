@@ -1,5 +1,6 @@
 import { rideService, locationService, userService } from '../../src/services/index.js';
 import createError from 'http-errors';
+import RideStatus from '../../src/enums/rideStatus.js';
 
 jest.mock('../../src/services/locationService.js');
 jest.mock('../../src/services/userService.js');
@@ -25,7 +26,7 @@ describe('Ride Service', () => {
                 source: mockSource,
                 destination: mockDestination,
                 fareId,
-                status: 'not-confirmed',
+                status: RideStatus.NOT_CONFIRMED,
                 driverId: null,
                 createdAt: expect.any(Date)
             }));
@@ -47,7 +48,7 @@ describe('Ride Service', () => {
             const ride = rideService.createRide(userId, mockSource, mockDestination, 1);
             const confirmedRide = rideService.confirmRide(ride.id, userId);
 
-            expect(confirmedRide.status).toBe('pending');
+            expect(confirmedRide.status).toBe(RideStatus.PENDING);
             expect(confirmedRide.driverId).toBe(2);
             expect(userService.updateUser).toHaveBeenCalledWith(2, { status: 'busy' });
         });
