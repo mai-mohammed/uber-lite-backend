@@ -8,7 +8,7 @@ export const confirmRide = (req, res, next) => {
             return res.status(400).json({ error: 'Ride ID is required' });
         }
 
-        const ride = rideService.confirmRide(rideId);
+        const ride = rideService.confirmRide(rideId, req.user.id);
 
         res.status(200).json({ ...ride });
     } catch (error) {

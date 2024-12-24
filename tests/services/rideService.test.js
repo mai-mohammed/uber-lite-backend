@@ -33,6 +33,8 @@ describe('Ride Service', () => {
     });
 
     describe('confirmRide', () => {
+        const userId = 1;
+        
         beforeEach(() => {
             locationService.matchDriver.mockImplementation(() => ({
                 driver_id: 2,
@@ -42,8 +44,8 @@ describe('Ride Service', () => {
         });
 
         it('should confirm a ride and assign a driver', () => {
-            const ride = rideService.createRide(1, mockSource, mockDestination, 1);
-            const confirmedRide = rideService.confirmRide(ride.id);
+            const ride = rideService.createRide(userId, mockSource, mockDestination, 1);
+            const confirmedRide = rideService.confirmRide(ride.id, userId);
 
             expect(confirmedRide.status).toBe('pending');
             expect(confirmedRide.driverId).toBe(2);
@@ -52,23 +54,31 @@ describe('Ride Service', () => {
 
         it('should throw error when no drivers available', () => {
             locationService.matchDriver.mockImplementation(() => null);
-            const ride = rideService.createRide(1, mockSource, mockDestination, 1);
+            const ride = rideService.createRide(userId, mockSource, mockDestination, 1);
 
-            expect(() => rideService.confirmRide(ride.id))
+            expect(() => rideService.confirmRide(ride.id, userId))
                 .toThrow(createError(400, 'No available drivers'));
         });
 
         it('should throw error for non-existent ride', () => {
-            expect(() => rideService.confirmRide(999))
+            expect(() => rideService.confirmRide(999, userId))
                 .toThrow(createError(404, 'Ride not found'));
         });
 
         it('should throw error for already confirmed ride', () => {
-            const ride = rideService.createRide(1, mockSource, mockDestination, 1);
-            rideService.confirmRide(ride.id);
+            const ride = rideService.createRide(userId, mockSource, mockDestination, 1);
+            rideService.confirmRide(ride.id, userId);
 
-            expect(() => rideService.confirmRide(ride.id))
+            expect(() => rideService.confirmRide(ride.id, userId))
                 .toThrow(createError(400, 'Ride has already been confirmed or completed'));
+        });
+
+        it('should throw error when unauthorized user tries to confirm ride', () => {
+            const ride = rideService.createRide(userId, mockSource, mockDestination, 1);
+            const unauthorizedUserId = 999;
+
+            expect(() => rideService.confirmRide(ride.id, unauthorizedUserId))
+                .toThrow(createError(403, 'Unauthorized to confirm this ride'));
         });
     });
 }); 

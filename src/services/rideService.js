@@ -19,10 +19,11 @@ export const createRide = (userId, source, destination, fareId) => {
     return ride;
 };
 
-export const confirmRide = (rideId) => {
+export const confirmRide = (rideId, userId) => {
     const ride = rides.find((r) => r.id === rideId);
 
     if (!ride) throw createError(404, 'Ride not found');
+    if (ride.userId !== userId) throw createError(403, 'Unauthorized to confirm this ride');
     if (ride.status !== 'not-confirmed')
         throw createError(400, 'Ride has already been confirmed or completed');
 
