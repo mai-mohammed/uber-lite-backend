@@ -172,3 +172,10 @@ Here’s the updated **README** section with the requested structure:
       "riderId": "<rider_id>"
   }
   ```
+
+## Scripts
+
+- `npm start` - Start production server
+- `npm run dev` - Start development server with Nodemon
+- `npm test` - Run tests
+- `npm run test:coverage` - Run tests with coverage report

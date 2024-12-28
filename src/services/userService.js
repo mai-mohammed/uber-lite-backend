@@ -78,4 +78,42 @@ export const updateUser = (userId, userData) => {
 
 export const getUsers = () => users;
 
-export default { registerUser, loginUser, logoutUser, isTokenBlacklisted, getUsers, createUser, getAvailableDrivers, updateUser };
+export const reserveDriver = (driverId) => {
+    const driver = users.find(user => user.id === driverId);
+    
+    if (!driver) {
+        throw createError(404, 'Driver not found');
+    }
+    
+    if (driver.role !== 'driver') {
+        throw createError(400, 'User is not a driver');
+    }
+    
+    if (driver.status === UserStatus.BUSY) {
+        throw createError(400, 'Driver is already busy with another ride');
+    }
+    
+    driver.status = UserStatus.BUSY;
+    return driver;
+};
+
+export const releaseDriver = (driverId) => {
+    const driver = users.find(user => user.id === driverId);
+    
+    if (!driver) {
+        throw createError(404, 'Driver not found');
+    }
+    
+    if (driver.role !== 'driver') {
+        throw createError(400, 'User is not a driver');
+    }
+    
+    if (driver.status !== UserStatus.BUSY) {
+        throw createError(400, 'Driver is not currently busy');
+    }
+    
+    driver.status = UserStatus.AVAILABLE;
+    return driver;
+};
+
+export default { registerUser, loginUser, logoutUser, isTokenBlacklisted, getUsers, createUser, getAvailableDrivers, updateUser, reserveDriver, releaseDriver };

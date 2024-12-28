@@ -135,4 +135,86 @@ describe('Ride Routes', () => {
             expect(response.status).toBe(404);
         });
     });
+
+    describe('POST /api/rides/:rideId/cancel', () => {
+        let riderToken;
+        let confirmedRide;
+
+        beforeEach(async () => {
+            riderToken = generateToken({
+                id: testRider.id,
+                email: testRider.email,
+                role: testRider.role
+            });
+
+            const source = { latitude: 40.7359, longitude: -73.9911 };
+            const destination = { latitude: 40.748817, longitude: -73.985428 };
+            const fareEstimation = fareService.calculateFare(source, destination);
+            const fare = fareService.createFare(testRider.id, fareEstimation);
+            confirmedRide = rideService.createRide(testRider.id, source, destination, fare.id);
+            
+            await request(app)
+                .post('/api/rides/confirm')
+                .set('Authorization', `Bearer ${riderToken}`)
+                .send({ rideId: confirmedRide.id });
+        });
+
+        it('should cancel ride successfully', async () => {
+            const response = await request(app)
+                .post(`/api/rides/${confirmedRide.id}/cancel`)
+                .set('Authorization', `Bearer ${riderToken}`);
+
+            expect(response.status).toBe(200);
+            expect(response.body).toHaveProperty('message', 'Ride cancelled successfully');
+            expect(response.body.ride).toHaveProperty('status', RideStatus.CANCELLED);
+            expect(response.body.ride).toHaveProperty('completedAt');
+        });
+
+        it('should return 401 without authentication', async () => {
+            const response = await request(app)
+                .post(`/api/rides/${confirmedRide.id}/cancel`);
+
+            expect(response.status).toBe(401);
+        });
+
+        it('should return 403 when non-owner tries to cancel ride', async () => {
+            const wrongUserToken = generateToken({
+                id: 999,
+                email: 'wrong@user.com',
+                role: 'rider'
+            });
+
+            const response = await request(app)
+                .post(`/api/rides/${confirmedRide.id}/cancel`)
+                .set('Authorization', `Bearer ${wrongUserToken}`);
+
+            expect(response.status).toBe(403);
+        });
+
+        it('should return 404 for non-existent ride', async () => {
+            const response = await request(app)
+                .post('/api/rides/999/cancel')
+                .set('Authorization', `Bearer ${riderToken}`);
+
+            expect(response.status).toBe(404);
+        });
+
+        it('should return 400 when cancelling completed ride', async () => {
+            const driverToken = generateToken({
+                id: testDriver.id,
+                email: testDriver.email,
+                role: testDriver.role
+            });
+
+            await request(app)
+                .post(`/api/rides/${confirmedRide.id}/complete`)
+                .set('Authorization', `Bearer ${driverToken}`);
+
+            const response = await request(app)
+                .post(`/api/rides/${confirmedRide.id}/cancel`)
+                .set('Authorization', `Bearer ${riderToken}`);
+
+            expect(response.status).toBe(400);
+        });
+    });
 });

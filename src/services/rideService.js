@@ -32,8 +32,8 @@ export const confirmRide = (rideId, userId) => {
     const nearestDriver = locationService.matchDriver(ride.source);
     if (!nearestDriver) throw createError(400, 'No available drivers');
 
-    userService.updateUser(nearestDriver.driver_id, { status: UserStatus.BUSY });
-
+    userService.reserveDriver(nearestDriver.driver_id);
+    
     ride.driverId = nearestDriver.driver_id;
     ride.status = RideStatus.PENDING;
 
@@ -43,30 +43,37 @@ export const confirmRide = (rideId, userId) => {
 export const completeRide = (rideId, driverId) => {
     const ride = rides.find((r) => r.id === rideId);
     
-    if (!ride) {
-        throw createError(404, 'Ride not found');
-    }
+    if (!ride) throw createError(404, 'Ride not found');
+    if (ride.driverId !== driverId) throw createError(403, 'Unauthorized: Only assigned driver can complete the ride');
+    if (ride.status === RideStatus.COMPLETED) throw createError(400, 'Ride is already completed');
+    if (ride.status !== RideStatus.PENDING) throw createError(400, 'Cannot complete a ride that is not in pending status');
 
-    if (ride.driverId !== driverId) {
-        throw createError(403, 'Unauthorized: Only assigned driver can complete the ride');
-    }
-
-    if (ride.status === RideStatus.COMPLETED) {
-        throw createError(400, 'Ride is already completed');
-    }
-
-    if (ride.status !== RideStatus.PENDING) {
-        throw createError(400, 'Cannot complete a ride that is not in pending status');
-    }
-
+    userService.releaseDriver(driverId);
+    
     ride.status = RideStatus.COMPLETED;
     ride.completedAt = new Date();
 
-    userService.updateUser(driverId, { status: UserStatus.AVAILABLE });
+    return ride;
+};
+
+export const cancelRide = (rideId, userId) => {
+    const ride = rides.find((r) => r.id === rideId);
+    
+    if (!ride) throw createError(404, 'Ride not found');
+    if (ride.userId !== userId) throw createError(403, 'Unauthorized: Only ride creator can cancel the ride');
+    if (ride.status === RideStatus.COMPLETED) throw createError(400, 'Cannot cancel a completed ride');
+    if (ride.status === RideStatus.CANCELLED) throw createError(400, 'Ride is already cancelled');
+
+    if (ride.status === RideStatus.PENDING && ride.driverId) {
+        userService.releaseDriver(ride.driverId);
+    }
+
+    ride.status = RideStatus.CANCELLED;
+    ride.completedAt = new Date();
 
     return ride;
 };
 
 export const getRides = () => rides;
 
-export default { createRide, confirmRide, completeRide, getRides };
+export default { createRide, confirmRide, completeRide, cancelRide, getRides };

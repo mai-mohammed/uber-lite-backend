@@ -6,5 +6,6 @@ const router = express.Router();
 
 router.post('/confirm', authMiddleware, rideController.confirmRide);
 router.post('/:rideId/complete', authMiddleware, rideController.completeRide);
+router.post('/:rideId/cancel', authMiddleware, rideController.cancelRide);
 
 export default router;
