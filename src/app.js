@@ -1,5 +1,5 @@
 import express from 'express';
-import { userRoutes, fareRoutes, rideRoutes } from './routes/index.js';
+import { userRoutes, fareRoutes, rideRoutes, driverRoutes } from './routes/index.js';
 const app = express();
 
 
@@ -8,6 +8,7 @@ app.use(express.json());
 app.use('/api/users', userRoutes);
 app.use('/api/fares', fareRoutes);
 app.use('/api/rides', rideRoutes);
+app.use('/api/drivers', driverRoutes);
 
 app.use((err, req, res, next) => {
     const isDev = process.env.NODE_ENV === 'development';

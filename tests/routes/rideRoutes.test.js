@@ -1,6 +1,6 @@
 import request from 'supertest';
 import app from '../../src/app.js';
-import { userService, rideService, fareService, locationService } from '../../src/services/index.js';
+import { userService, rideService, fareService, driverService } from '../../src/services/index.js';
 import { generateToken } from '../../src/utils/jwt.js';
 import UserStatus from '../../src/enums/userStatus.js';
 import RideStatus from '../../src/enums/rideStatus.js';
@@ -11,7 +11,7 @@ describe('Ride Routes', () => {
         name: 'Test Rider',
         email: 'rider@test.com',
         password: 'password123',
-        role: 'rider'
+        type: 'rider'
     };
 
     const testDriver = {
@@ -19,7 +19,7 @@ describe('Ride Routes', () => {
         name: 'Test Driver',
         email: 'driver@test.com',
         password: 'password123',
-        role: 'driver',
+        type: 'driver',
         status: UserStatus.AVAILABLE
     };
 
@@ -29,30 +29,29 @@ describe('Ride Routes', () => {
     beforeEach(async () => {
         // Clear any existing users
         userService.getUsers().length = 0;
-        
+
         // Register test users
         userService.registerUser(testRider);
         userService.registerUser(testDriver);
-        
+
         // Generate token for rider
         token = generateToken({
             id: testRider.id,
             email: testRider.email,
-            role: testRider.role
+            type: testRider.type
         });
 
         // Create a test ride
         const source = { latitude: 40.7359, longitude: -73.9911 };
         const destination = { latitude: 40.748817, longitude: -73.985428 };
-        const fareEstimation = fareService.calculateFare(source, destination);
-        const fare = fareService.createFare(testRider.id, fareEstimation);
-        ride = rideService.createRide(testRider.id, source, destination, fare.id);
+        ride = rideService.createRide(testRider.id, source, destination);
 
         // Update driver's location to be near the pickup point
-        locationService.updateDriverLocation(
+        driverService.updateDriverLocation(
             testDriver.id,
             source.longitude,
-            source.latitude
+            source.latitude,
+            testDriver.id
         );
     });
 
@@ -93,7 +92,7 @@ describe('Ride Routes', () => {
             driverToken = generateToken({
                 id: testDriver.id,
                 email: testDriver.email,
-                role: testDriver.role
+                type: testDriver.type
             });
 
             await request(app)
@@ -110,14 +109,14 @@ describe('Ride Routes', () => {
             expect(response.status).toBe(200);
             expect(response.body).toHaveProperty('message', 'Ride completed successfully');
             expect(response.body.ride).toHaveProperty('status', RideStatus.COMPLETED);
-            expect(response.body.ride).toHaveProperty('completedAt');
+            expect(response.body.ride).toHaveProperty('completed_at');
         });
 
         it('should return 403 when non-assigned driver tries to complete ride', async () => {
             const wrongDriverToken = generateToken({
                 id: 999,
                 email: 'wrong@driver.com',
-                role: 'driver'
+                type: 'driver'
             });
 
             const response = await request(app)
@@ -144,15 +143,14 @@ describe('Ride Routes', () => {
             riderToken = generateToken({
                 id: testRider.id,
                 email: testRider.email,
-                role: testRider.role
+                type: testRider.type
             });
 
             const source = { latitude: 40.7359, longitude: -73.9911 };
             const destination = { latitude: 40.748817, longitude: -73.985428 };
             const fareEstimation = fareService.calculateFare(source, destination);
-            const fare = fareService.createFare(testRider.id, fareEstimation);
-            confirmedRide = rideService.createRide(testRider.id, source, destination, fare.id);
-            
+            confirmedRide = rideService.createRide(testRider.id, source, destination);
+
             await request(app)
                 .post('/api/rides/confirm')
                 .set('Authorization', `Bearer ${riderToken}`)
@@ -167,7 +165,7 @@ describe('Ride Routes', () => {
             expect(response.status).toBe(200);
             expect(response.body).toHaveProperty('message', 'Ride cancelled successfully');
             expect(response.body.ride).toHaveProperty('status', RideStatus.CANCELLED);
-            expect(response.body.ride).toHaveProperty('completedAt');
+            expect(response.body.ride).toHaveProperty('completed_at');
         });
 
         it('should return 401 without authentication', async () => {
@@ -181,7 +179,7 @@ describe('Ride Routes', () => {
             const wrongUserToken = generateToken({
                 id: 999,
                 email: 'wrong@user.com',
-                role: 'rider'
+                type: 'rider'
             });
 
             const response = await request(app)
@@ -203,7 +201,7 @@ describe('Ride Routes', () => {
             const driverToken = generateToken({
                 id: testDriver.id,
                 email: testDriver.email,
-                role: testDriver.role
+                type: testDriver.type
             });
 
             await request(app)

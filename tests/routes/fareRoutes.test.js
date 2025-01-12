@@ -9,19 +9,18 @@ describe('Fare Routes', () => {
         name: 'Test Rider',
         email: 'rider@test.com',
         password: 'password123',
-        role: 'rider'
+        type: 'rider'
     };
 
     let token;
 
     beforeEach(async () => {
-        // Clear users and create test user
         userService.getUsers().length = 0;
         userService.registerUser(testUser);
         token = generateToken({
             id: testUser.id,
             email: testUser.email,
-            role: testUser.role
+            type: testUser.type
         });
     });
 
@@ -31,15 +30,19 @@ describe('Fare Routes', () => {
             destination: { latitude: 40.748817, longitude: -73.985428 }
         };
 
-        it('should return fare estimation successfully', async () => {
+        it('should return ride with fare estimation successfully', async () => {
             const response = await request(app)
                 .post('/api/fares')
                 .set('Authorization', `Bearer ${token}`)
                 .send(validLocation);
 
             expect(response.status).toBe(200);
-            expect(response.body).toHaveProperty('fare');
             expect(response.body).toHaveProperty('ride');
+            expect(response.body.ride).toHaveProperty('fare_amount');
+            expect(response.body.ride).toHaveProperty('source_lat');
+            expect(response.body.ride).toHaveProperty('source_lng');
+            expect(response.body.ride).toHaveProperty('destination_lat');
+            expect(response.body.ride).toHaveProperty('destination_lng');
         });
 
         it('should return 400 for invalid coordinates', async () => {

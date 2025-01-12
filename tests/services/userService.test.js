@@ -8,7 +8,7 @@ describe('Driver Status Management', () => {
         name: 'Test Driver',
         email: 'driver@test.com',
         password: 'password',
-        role: 'driver',
+        type: 'driver',
         status: UserStatus.AVAILABLE
     };
 

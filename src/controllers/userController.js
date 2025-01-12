@@ -2,13 +2,13 @@ import { userService } from '../services/index.js';
 
 export const register = (req, res, next) => {
     try {
-        const { name, email, password, role } = req.body;
+        const { name, email, password, type } = req.body;
 
-        if (!name || !email || !password || !role) {
+            if (!name || !email || !password || !type) {
             return res.status(400).json({ error: 'All fields are required' });
         }
 
-        const user = userService.registerUser({ name, email, password, role });
+        const user = userService.registerUser({ name, email, password, type });
         res.status(201).json({ message: 'User registered successfully' });
     } catch (error) {
         if (error.message === 'User already exists') {

@@ -1,0 +1,37 @@
+@startuml entities
+
+entity "User" as User {
+    +id
+    +name
+    +email
+    +phone
+    +password
+    +type
+    +status
+}
+
+entity "Ride" as Ride {
+    +id
+    +rider_id
+    +driver_id
+    +source_lat
+    +source_lng
+    +destination_lat
+    +destination_lng
+    +fare_amount
+    +status
+    +created_at
+    +completed_at
+    +cancelled_at
+    +started_at
+}
+
+entity "DriverLocation" as DriverLocation {
+    +driver_id
+    +latitude
+    +longitude
+    +timestamp
+}
+
+User "1" -- "N" Ride : creates/drives
+@enduml 

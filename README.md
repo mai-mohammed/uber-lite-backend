@@ -32,10 +32,13 @@
 3. **Providing Location Updates**:
    - The driver's location should be tracked in real time to enable efficient matching and rider tracking.
 
-4. **Handling the Ride**:
+4. **Starting the Ride**:
+   - The driver should be able to mark when they've picked up the rider and started the journey.
+
+5. **Handling the Ride**:
    - The driver should only be allowed to handle one ride at a time, avoiding conflicts from multiple requests.
 
-5. **Completing the Ride**:
+6. **Completing the Ride**:
    - The driver should have the ability to mark the ride as completed and provide feedback about the rider.
 
 ---
@@ -75,28 +78,32 @@ Here’s the updated **README** section with the requested structure:
 ### User
 - `id`
 - `name`
-- `role`
+- `email`
+- `password`
+- `type`
 - `status`
 
 ### Ride
 - `id`
-- `fare_id`
-- `user_id`
+- `rider_id`
 - `driver_id`
-- `source`
-- `destination`
+- `source_lat`
+- `source_lng`
+- `destination_lat`
+- `destination_lng`
+- `fare_amount`
 - `status`
+- `completed_at`
+- `cancelled_at`
+- `started_at`
+- `created_at`
 
-### Fare
-- `id`
-- `ride_id`
-- `fare_estimation`
-
-### Location
-- `user_id`
-- `longitude`
+### DriverLocation (In-Memory)
+- `driver_id`
 - `latitude`
-  
+- `longitude`
+- `timestamp`
+
 ## APIs
 
 
@@ -143,8 +150,8 @@ Here’s the updated **README** section with the requested structure:
   ```
 
 ### Update Driver Location
-- **Endpoint**: `/drivers/location`
-- **Method**: POST
+- **Endpoint**: `/drivers/{driverId}/location`
+- **Method**: PUT
 - **Request Body**:
   ```json
   {

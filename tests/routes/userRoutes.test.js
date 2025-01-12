@@ -8,7 +8,7 @@ describe('User Routes', () => {
         name: 'Test User',
         email: 'test@example.com',
         password: 'password123',
-        role: 'rider'
+        type: 'rider'
     };
 
     beforeEach(() => {
@@ -77,7 +77,7 @@ describe('User Routes', () => {
             token = generateToken({
                 id: 1,
                 email: testUser.email,
-                role: testUser.role
+                type: testUser.type
             });
         });
 

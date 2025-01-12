@@ -6,14 +6,14 @@ import UserStatus from '../enums/userStatus.js';
 const users = [];
 let blacklistedTokens = [];
 
-const createUser = ({ id, name, email, password, role, status }) => {
+const createUser = ({ id, name, email, password, type, status }) => {
     const hashedPassword = bcrypt.hashSync(password, 10);
-    const newUser = { id, name, email, password: hashedPassword, role, status };
+    const newUser = { id, name, email, password: hashedPassword, type, status };
     users.push(newUser);
     return newUser;
 };
 
-export const registerUser = ({ name, email, password, role, status }) => {
+export const registerUser = ({ name, email, password, type, status }) => {
     const existingUser = users.find((user) => user.email === email);
     if (existingUser) {
         throw createError(409, 'User already exists');
@@ -24,7 +24,7 @@ export const registerUser = ({ name, email, password, role, status }) => {
         name,
         email,
         password,
-        role,
+        type,
         status: status || UserStatus.ACTIVE,
     });
     return newUser;
@@ -41,7 +41,7 @@ export const loginUser = ({ email, password }) => {
         throw createError(401, 'Invalid credentials'); // Unauthorized
     }
 
-    const token = generateToken({ id: user.id, email: user.email, role: user.role });
+    const token = generateToken({ id: user.id, email: user.email, type: user.type });
     return { token, user };
 };
 
@@ -56,7 +56,7 @@ export const isTokenBlacklisted = (token) => {
 
 export const getAvailableDrivers = () => {
     const availableDrivers = users
-        .filter(user => user.role === 'driver' && user.status === UserStatus.AVAILABLE)
+        .filter(user => user.type === 'driver' && user.status === UserStatus.AVAILABLE)
         .map(driver => driver.id);
     return availableDrivers;
 };
@@ -85,7 +85,7 @@ export const reserveDriver = (driverId) => {
         throw createError(404, 'Driver not found');
     }
     
-    if (driver.role !== 'driver') {
+    if (driver.type !== 'driver') {
         throw createError(400, 'User is not a driver');
     }
     
@@ -104,7 +104,7 @@ export const releaseDriver = (driverId) => {
         throw createError(404, 'Driver not found');
     }
     
-    if (driver.role !== 'driver') {
+    if (driver.type !== 'driver') {
         throw createError(400, 'User is not a driver');
     }
     

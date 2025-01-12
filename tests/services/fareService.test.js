@@ -15,25 +15,4 @@ describe('Fare Service', () => {
             expect(() => fareService.calculateFare(invalidSource, mockDestination)).toThrow();
         });
     });
-
-    describe('createFare', () => {
-        it('should create a new fare record', () => {
-            const userId = 1;
-            const fareEstimation = 25;
-            const fare = fareService.createFare(userId, fareEstimation);
-
-            expect(fare).toEqual(expect.objectContaining({
-                id: expect.any(Number),
-                userId,
-                fare: fareEstimation,
-                timestamp: expect.any(Date)
-            }));
-        });
-
-        it('should add fare to the fares array', () => {
-            const initialFaresCount = fareService.getFares().length;
-            fareService.createFare(1, 25);
-            expect(fareService.getFares().length).toBe(initialFaresCount + 1);
-        });
-    });
 }); 
