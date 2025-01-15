@@ -85,4 +85,39 @@ describe('Driver Service', () => {
             expect(nearestDriver).toBeNull();
         });
     });
+
+    describe('updateDriverStatus', () => {
+        beforeEach(() => {
+            jest.clearAllMocks();
+            userService.getUsers.mockImplementation(() => ([{
+                id: mockDriverId,
+                name: 'Test Driver',
+                email: 'driver@test.com',
+                type: 'driver',
+                status: UserStatus.AVAILABLE
+            }]));
+        });
+
+        it('should update driver status successfully', () => {
+            const updatedDriver = driverService.updateDriverStatus(
+                mockDriverId, 
+                UserStatus.BUSY, 
+                mockDriverId
+            );
+
+            expect(updatedDriver.status).toBe(UserStatus.BUSY);
+        });
+
+        it('should throw error for unauthorized update', () => {
+            expect(() => 
+                driverService.updateDriverStatus(mockDriverId, UserStatus.BUSY, 999)
+            ).toThrow('Unauthorized: Only the driver can update their own status');
+        });
+
+        it('should throw error for invalid status', () => {
+            expect(() => 
+                driverService.updateDriverStatus(mockDriverId, 'invalid_status', mockDriverId)
+            ).toThrow('Invalid status');
+        });
+    });
 }); 

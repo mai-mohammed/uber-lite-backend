@@ -4,7 +4,7 @@ const UserStatus = {
     BUSY: 'busy',
     INACTIVE: 'inactive',
     BANNED: 'banned',
-
+    OFFLINE : 'offline'
 };
 
 export default UserStatus;

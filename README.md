@@ -106,79 +106,122 @@ Here’s the updated **README** section with the requested structure:
 
 ## APIs
 
+### User Management
+- **Register User**
+  - **Endpoint**: `/users/register`
+  - **Method**: POST
+  - **Request Body**:
+    ```json
+    {
+        "name": "<user_name>",
+        "email": "<user_email>",
+        "password": "<user_password>",
+        "type": "rider" | "driver"
+    }
+    ```
 
-### Update Driver Availability
-- **Endpoint**: `/drivers/{driverId}`
-- **Method**: POST
-- **Request Body**:
-  ```json
-  {
-      "driverId": "<driver_id>",
-      "status": "available" | "unavailable"
-  }
-  ```
+- **Login User**
+  - **Endpoint**: `/users/login`
+  - **Method**: POST
+  - **Request Body**:
+    ```json
+    {
+        "email": "<user_email>",
+        "password": "<user_password>"
+    }
+    ```
 
-### Get Fare Estimation
-- **Endpoint**: `/fares`
-- **Method**: POST
-- **Request Body**:
-  ```json
-  {
-      "source": "<source_location>",
-      "destination": "<destination_location>"
-  }
-  ```
+- **Logout User**
+  - **Endpoint**: `/users/logout`
+  - **Method**: POST
+  - **Auth**: Required
 
-### Confirm the Ride
-- **Endpoint**: `/rides/confirm`
-- **Method**: POST
-- **Request Body**:
-  ```json
-  {
-      "rideId": "<ride_id>"
-  }
-  ```
+### Driver Operations
+- **Update Driver Location**
+  - **Endpoint**: `/drivers/:driverId/location`
+  - **Method**: PUT
+  - **Auth**: Required (Driver only)
+  - **Request Body**:
+    ```json
+    {
+        "longitude": "<driver_longitude>",
+        "latitude": "<driver_latitude>"
+    }
+    ```
 
-### Accept/Deny a Ride Request
-- **Endpoint**: `/rides/{rideId}`
-- **Method**: PUT | PATCH
-- **Request Body**:
-  ```json
-  {
-      "response": "accept" | "deny"
-  }
-  ```
+- **Update Driver Status**
+  - **Endpoint**: `/drivers/:driverId/status`
+  - **Method**: PUT
+  - **Auth**: Required (Driver only)
+  - **Request Body**:
+    ```json
+    {
+        "status": "available" | "busy" | "offline"
+    }
+    ```
 
-### Update Driver Location
-- **Endpoint**: `/drivers/{driverId}/location`
-- **Method**: PUT
-- **Request Body**:
-  ```json
-  {
-      "longitude": "<driver_longitude>",
-      "latitude": "<driver_latitude>"
-  }
-  ```
+### Fare Operations
+- **Get Fare Estimation**
+  - **Endpoint**: `/fares`
+  - **Method**: POST
+  - **Auth**: Required
+  - **Request Body**:
+    ```json
+    {
+        "source": {
+            "latitude": "<source_latitude>",
+            "longitude": "<source_longitude>"
+        },
+        "destination": {
+            "latitude": "<destination_latitude>",
+            "longitude": "<destination_longitude>"
+        }
+    }
+    ```
 
-### Get Driver Location [2 options]
-- **Short Polling**
-  - **Endpoint**: `/rides/{rideId}/driver-location`
-  - **Method**: GET
+### Ride Operations
+- **Confirm Ride**
+  - **Endpoint**: `/rides/confirm`
+  - **Method**: POST
+  - **Auth**: Required (Rider only)
+  - **Request Body**:
+    ```json
+    {
+        "rideId": "<ride_id>"
+    }
+    ```
 
-- **Server-Sent Events (SSE)**
-  - **Endpoint**: `/rides/{rideId}/driver-location-stream`
-  - **Method**: GET
+- **Start Ride**
+  - **Endpoint**: `/rides/:rideId/start`
+  - **Method**: POST
+  - **Auth**: Required (Driver only)
 
-### Complete Ride
-- **Endpoint**: `/rides/{rideId}/complete`
-- **Method**: POST
-- **Request Body**:
-  ```json
-  {
-      "driverId": "<driver_id>",
-      "riderId": "<rider_id>"
-  }
-  ```
+- **Complete Ride**
+  - **Endpoint**: `/rides/:rideId/complete`
+  - **Method**: POST
+  - **Auth**: Required (Driver only)
+
+- **Cancel Ride**
+  - **Endpoint**: `/rides/:rideId/cancel`
+  - **Method**: POST
+  - **Auth**: Required (Rider only)
+
+- **Respond to Ride Request**
+  - **Endpoint**: `/rides/:rideId/respond`
+  - **Method**: PUT
+  - **Auth**: Required (Driver only)
+  - **Request Body**:
+    ```json
+    {
+        "isAccepted": true | false
+    }
+    ```
+
+
+### Authentication
+- All protected routes require a Bearer token in the Authorization header
+- Token is obtained from the login response
+- Format: `Authorization: Bearer <token>`
 
 ## Scripts
 
@@ -186,3 +229,5 @@ Here’s the updated **README** section with the requested structure:
 - `npm run dev` - Start development server with Nodemon
 - `npm test` - Run tests
 - `npm run test:coverage` - Run tests with coverage report
+- `npm run test:services` - Run services tests
+- `npm run test:routes` - Run routes tests

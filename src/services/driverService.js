@@ -1,6 +1,7 @@
 import userService from './userService.js';
 import locationService from './locationService.js';
 import createError from 'http-errors';
+import UserStatus from '../enums/userStatus.js';
 
 const driverLocations = [];
 
@@ -57,4 +58,25 @@ export const matchDriver = (source) => {
     return nearestDriver;
 };
 
-export default { updateDriverLocation, matchDriver };
+export const updateDriverStatus = (driverId, status, userId) => {
+    const users = userService.getUsers();
+    const driver = users.find(user => user.id === driverId && user.type === 'driver');
+
+    if (!driver) {
+        throw createError(404, 'Driver not found');
+    }
+
+    if (driver.id !== userId) {
+        throw createError(403, 'Unauthorized: Only the driver can update their own status');
+    }
+
+    const validStatuses = [UserStatus.AVAILABLE, UserStatus.BUSY, UserStatus.OFFLINE];
+    if (!validStatuses.includes(status)) {
+        throw createError(400, 'Invalid status');
+    }
+
+    driver.status = status;
+    return driver;
+};
+
+export default { updateDriverLocation, matchDriver, updateDriverStatus };

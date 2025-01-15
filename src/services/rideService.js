@@ -55,8 +55,7 @@ export const completeRide = (rideId, driverId) => {
     
     if (!ride) throw createError(404, 'Ride not found');
     if (ride.driver_id !== driverId) throw createError(403, 'Unauthorized: Only assigned driver can complete the ride');
-    if (ride.status === RideStatus.COMPLETED) throw createError(400, 'Ride is already completed');
-    if (ride.status !== RideStatus.PENDING) throw createError(400, 'Cannot complete a ride that is not in pending status');
+    if (ride.status !== RideStatus.STARTED) throw createError(400, 'Ride must be started first');
 
     userService.releaseDriver(driverId);
     
@@ -71,10 +70,13 @@ export const cancelRide = (rideId, userId) => {
     
     if (!ride) throw createError(404, 'Ride not found');
     if (ride.rider_id !== userId) throw createError(403, 'Unauthorized: Only ride creator can cancel the ride');
-    if (ride.status === RideStatus.COMPLETED) throw createError(400, 'Cannot cancel a completed ride');
-    if (ride.status === RideStatus.CANCELLED) throw createError(400, 'Ride is already cancelled');
+    
+    const allowedStatuses = [RideStatus.PENDING, RideStatus.NOT_CONFIRMED, RideStatus.READY];
+    if (!allowedStatuses.includes(ride.status)) {
+        throw createError(400, `Cannot cancel a ride with status: ${ride.status}`);
+    }
 
-    if (ride.status === RideStatus.PENDING && ride.driver_id) {
+    if (ride.status === RideStatus.READY && ride.driver_id) {
         userService.releaseDriver(ride.driver_id);
     }
 
@@ -86,4 +88,32 @@ export const cancelRide = (rideId, userId) => {
 
 export const getRides = () => rides;
 
-export default { createRide, confirmRide, completeRide, cancelRide, getRides };
+export const startRide = (rideId, driverId) => {
+    const ride = rides.find((r) => r.id === rideId);
+    
+    if (!ride) throw createError(404, 'Ride not found');
+    if (ride.driver_id !== driverId) throw createError(403, 'Unauthorized: Only assigned driver can start the ride');
+    if (ride.status !== RideStatus.READY) throw createError(400, 'Ride must be accepted before starting');
+    
+    ride.started_at = new Date();
+    ride.status = RideStatus.STARTED;
+
+    return ride;
+};
+
+export const handleRideResponse = (rideId, driverId, isAccepted) => {
+    const ride = rides.find((r) => r.id === rideId);
+    
+    if (!ride) throw createError(404, 'Ride not found');
+    if (ride.status !== RideStatus.PENDING) throw createError(400, 'Can only respond to pending ride requests');
+    
+    if (isAccepted) {
+        ride.driver_id = driverId;
+        ride.status = RideStatus.READY;
+    }
+
+    return ride;
+};
+
+
+export default { createRide, confirmRide, completeRide, cancelRide, startRide, getRides, handleRideResponse };

@@ -1,7 +1,8 @@
 import request from 'supertest';
 import app from '../../src/app.js';
-import { driverService, userService } from '../../src/services/index.js';
+import { userService } from '../../src/services/index.js';
 import { generateToken } from '../../src/utils/jwt.js';
+import UserStatus from '../../src/enums/userStatus.js';
 
 describe('Driver Routes', () => {
     const testDriver = {
@@ -64,6 +65,48 @@ describe('Driver Routes', () => {
 
             expect(response.status).toBe(404);
             expect(response.body).toHaveProperty('error', 'Driver not found');
+        });
+    });
+
+    describe('PUT /api/drivers/:driverId/status', () => {
+        it('should update status successfully', async () => {
+            const response = await request(app)
+                .put(`/api/drivers/${testDriver.id}/status`)
+                .set('Authorization', `Bearer ${driverToken}`)
+                .send({ status: UserStatus.AVAILABLE });
+
+            expect(response.status).toBe(200);
+            expect(response.body).toHaveProperty('message', 'Status updated successfully');
+        });
+
+        it('should return 403 when driver tries to update another driver status', async () => {
+            const response = await request(app)
+                .put(`/api/drivers/${anotherDriver.id}/status`)
+                .set('Authorization', `Bearer ${driverToken}`)
+                .send({ status: UserStatus.AVAILABLE });
+
+            expect(response.status).toBe(403);
+            expect(response.body).toHaveProperty('error', 'Unauthorized: Only the driver can update their own status');
+        });
+
+        it('should return 400 when status is missing', async () => {
+            const response = await request(app)
+                .put(`/api/drivers/${testDriver.id}/status`)
+                .set('Authorization', `Bearer ${driverToken}`)
+                .send({});
+
+            expect(response.status).toBe(400);
+            expect(response.body).toHaveProperty('error', 'Status is required');
+        });
+
+        it('should return 400 when status is invalid', async () => {
+            const response = await request(app)
+                .put(`/api/drivers/${testDriver.id}/status`)
+                .set('Authorization', `Bearer ${driverToken}`)
+                .send({ status: 'invalid_status' });
+
+            expect(response.status).toBe(400);
+            expect(response.body.error).toContain('Invalid status');
         });
     });
 }); 

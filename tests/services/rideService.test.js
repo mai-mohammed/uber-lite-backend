@@ -73,11 +73,23 @@ describe('Ride Service', () => {
         it('should complete a ride and release the driver', () => {
             const ride = rideService.createRide(userId, mockSource, mockDestination);
             rideService.confirmRide(ride.id, userId);
+            rideService.handleRideResponse(ride.id, driverId, true);
+            rideService.startRide(ride.id, driverId);
+            
             const completedRide = rideService.completeRide(ride.id, driverId);
 
             expect(completedRide.status).toBe(RideStatus.COMPLETED);
             expect(completedRide.completed_at).toBeInstanceOf(Date);
             expect(userService.releaseDriver).toHaveBeenCalledWith(driverId);
+        });
+
+        it('should throw error when completing a non-started ride', () => {
+            const ride = rideService.createRide(userId, mockSource, mockDestination);
+            rideService.confirmRide(ride.id, userId);
+            rideService.handleRideResponse(ride.id, driverId, true);
+
+            expect(() => rideService.completeRide(ride.id, driverId))
+                .toThrow(createError(400, 'Ride must be started first'));
         });
     });
 
@@ -85,6 +97,7 @@ describe('Ride Service', () => {
         it('should cancel a confirmed ride and release the driver', () => {
             const ride = rideService.createRide(userId, mockSource, mockDestination);
             rideService.confirmRide(ride.id, userId);
+            rideService.handleRideResponse(ride.id, driverId, true);
             const cancelledRide = rideService.cancelRide(ride.id, userId);
 
             expect(cancelledRide.status).toBe(RideStatus.CANCELLED);
@@ -98,4 +111,34 @@ describe('Ride Service', () => {
                 .toThrow(createError(403, 'Unauthorized: Only ride creator can cancel the ride'));
         });
     });
-}); 
+
+    describe('handleRideResponse', () => {
+        it('should accept a ride request successfully', () => {
+            const ride = rideService.createRide(userId, mockSource, mockDestination);
+            rideService.confirmRide(ride.id, userId);
+            const acceptedRide = rideService.handleRideResponse(ride.id, driverId, true);
+
+            expect(acceptedRide.driver_id).toBe(driverId);
+        });
+
+        it('should reject a ride request successfully', () => {
+            const ride = rideService.createRide(userId, mockSource, mockDestination);
+            rideService.confirmRide(ride.id, userId);
+            const rejectedRide = rideService.handleRideResponse(ride.id, driverId, false);
+
+            expect(rejectedRide.status).toBe(RideStatus.PENDING);
+        });
+
+        it('should throw error when responding to non-pending ride', () => {
+            const ride = rideService.createRide(userId, mockSource, mockDestination);
+            
+            expect(() => rideService.handleRideResponse(ride.id, driverId, true))
+                .toThrow(createError(400, 'Can only respond to pending ride requests'));
+        });
+
+        it('should throw error for non-existent ride', () => {
+            expect(() => rideService.handleRideResponse(999, driverId, true))
+                .toThrow(createError(404, 'Ride not found'));
+        });
+    });
+});

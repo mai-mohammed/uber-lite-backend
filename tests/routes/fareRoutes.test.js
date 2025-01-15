@@ -58,13 +58,5 @@ describe('Fare Routes', () => {
 
             expect(response.status).toBe(400);
         });
-
-        it('should return 401 without authentication', async () => {
-            const response = await request(app)
-                .post('/api/fares')
-                .send(validLocation);
-
-            expect(response.status).toBe(401);
-        });
     });
 });

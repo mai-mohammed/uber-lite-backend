@@ -11,13 +11,13 @@
 			"name": "User",
 			"item": [
 				{
-					"name": "register",
+					"name": "register rider",
 					"request": {
 						"method": "POST",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"Test\",\n    \"email\": \"test@example.com\",\n    \"password\": \"123456\",\n    \"role\": \"user\"\n}",
+							"raw": "{\n    \"name\": \"Test Rider\",\n    \"email\": \"rider@example.com\",\n    \"password\": \"123456\",\n    \"type\": \"rider\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -39,13 +39,111 @@
 					"response": []
 				},
 				{
-					"name": "login",
+					"name": "register driver",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"if (jsonData.user && jsonData.user.id) {",
+									"    pm.environment.set(\"uber-lite-driver-id\", jsonData.user.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "POST",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"email\": \"test@example.com\",\n    \"password\": \"123456\"\n}",
+							"raw": "{\n    \"name\": \"Test Driver\",\n    \"email\": \"driver@example.com\",\n    \"password\": \"123456\",\n    \"type\": \"driver\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{uber-lite-base}}/api/users/register",
+							"host": [
+								"{{uber-lite-base}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "login rider",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"if (jsonData.token) {",
+									"    pm.environment.set(\"uber-lite-rider-token\", jsonData.token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"rider@example.com\",\n    \"password\": \"123456\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{uber-lite-base}}/api/users/login",
+							"host": [
+								"{{uber-lite-base}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "login driver",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"if (jsonData.token) {",
+									"    pm.environment.set(\"uber-lite-driver-token\", jsonData.token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"driver@example.com\",\n    \"password\": \"123456\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -74,7 +172,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "{{uber-lite-token}}",
+									"value": "{{uber-lite-rider-token}}",
 									"type": "string"
 								}
 							]
@@ -98,17 +196,128 @@
 			]
 		},
 		{
-			"name": "Fare",
+			"name": "Driver",
 			"item": [
 				{
-					"name": "get fare estimation",
+					"name": "update location",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"if (jsonData.driver && jsonData.driver.id) {",
+									"    pm.environment.set(\"uber-lite-driver-id\", jsonData.driver.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"auth": {
 							"type": "bearer",
 							"bearer": [
 								{
 									"key": "token",
-									"value": "{{uber-lite-token}}",
+									"value": "{{uber-lite-driver-token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"longitude\": -73.9911,\n    \"latitude\": 40.7359\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{uber-lite-base}}/api/drivers/{{uber-lite-driver-id}}/location",
+							"host": [
+								"{{uber-lite-base}}"
+							],
+							"path": [
+								"api",
+								"drivers",
+								"{{uber-lite-driver-id}}",
+								"location"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update status",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{uber-lite-driver-token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"status\": \"available\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{uber-lite-base}}/api/drivers/{{uber-lite-driver-id}}/status",
+							"host": [
+								"{{uber-lite-base}}"
+							],
+							"path": [
+								"api",
+								"drivers",
+								"{{uber-lite-driver-id}}",
+								"status"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Fare",
+			"item": [
+				{
+					"name": "get fare estimation",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"if (jsonData.ride && jsonData.ride.id) {",
+									"    pm.environment.set(\"uber-lite-ride-id\", jsonData.ride.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{uber-lite-rider-token}}",
 									"type": "string"
 								}
 							]
@@ -150,7 +359,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "{{uber-lite-token}}",
+									"value": "{{uber-lite-rider-token}}",
 									"type": "string"
 								}
 							]
@@ -159,7 +368,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"rideId\" : 1\n}",
+							"raw": "{\n    \"rideId\": {{uber-lite-ride-id}}\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -179,6 +388,135 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "start ride",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{uber-lite-driver-token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{uber-lite-base}}/api/rides/{{uber-lite-ride-id}}/start",
+							"host": [
+								"{{uber-lite-base}}"
+							],
+							"path": [
+								"api",
+								"rides",
+								"{{uber-lite-ride-id}}",
+								"start"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "complete ride",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{uber-lite-driver-token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{uber-lite-base}}/api/rides/{{uber-lite-ride-id}}/complete",
+							"host": [
+								"{{uber-lite-base}}"
+							],
+							"path": [
+								"api",
+								"rides",
+								"{{uber-lite-ride-id}}",
+								"complete"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "cancel ride",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{uber-lite-rider-token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{uber-lite-base}}/api/rides/{{uber-lite-ride-id}}/cancel",
+							"host": [
+								"{{uber-lite-base}}"
+							],
+							"path": [
+								"api",
+								"rides",
+								"{{uber-lite-ride-id}}",
+								"cancel"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "respond to ride",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{uber-lite-driver-token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"isAccepted\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{uber-lite-base}}/api/rides/{{uber-lite-ride-id}}/respond",
+							"host": [
+								"{{uber-lite-base}}"
+							],
+							"path": [
+								"api",
+								"rides",
+								"{{uber-lite-ride-id}}",
+								"respond"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		}
@@ -190,7 +528,22 @@
 			"type": "default"
 		},
 		{
-			"key": "uber-lite-token",
+			"key": "uber-lite-rider-token",
+			"value": "",
+			"type": "default"
+		},
+		{
+			"key": "uber-lite-driver-token",
+			"value": "",
+			"type": "default"
+		},
+		{
+			"key": "uber-lite-ride-id",
+			"value": "",
+			"type": "default"
+		},
+		{
+			"key": "uber-lite-driver-id",
 			"value": "",
 			"type": "default"
 		}

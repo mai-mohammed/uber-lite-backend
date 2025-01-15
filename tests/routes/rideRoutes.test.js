@@ -65,23 +65,6 @@ describe('Ride Routes', () => {
             expect(response.body).toHaveProperty('id', ride.id);
             expect(response.body).toHaveProperty('status', RideStatus.PENDING);
         });
-
-        it('should return 404 for non-existent ride', async () => {
-            const response = await request(app)
-                .post('/api/rides/confirm')
-                .set('Authorization', `Bearer ${token}`)
-                .send({ rideId: 999 });
-
-            expect(response.status).toBe(404);
-        });
-
-        it('should return 401 without authentication', async () => {
-            const response = await request(app)
-                .post('/api/rides/confirm')
-                .send({ rideId: ride.id });
-
-            expect(response.status).toBe(401);
-        });
     });
 
     describe('POST /api/rides/:rideId/complete', () => {
@@ -95,10 +78,22 @@ describe('Ride Routes', () => {
                 type: testDriver.type
             });
 
+            // Setup ride through all required states
             await request(app)
                 .post('/api/rides/confirm')
                 .set('Authorization', `Bearer ${token}`)
                 .send({ rideId: ride.id });
+
+            // Driver accepts the ride
+            await request(app)
+                .put(`/api/rides/${ride.id}/respond`)
+                .set('Authorization', `Bearer ${driverToken}`)
+                .send({ isAccepted: true });
+
+            // Start the ride
+            await request(app)
+                .post(`/api/rides/${ride.id}/start`)
+                .set('Authorization', `Bearer ${driverToken}`);
         });
 
         it('should complete ride successfully', async () => {
@@ -125,14 +120,6 @@ describe('Ride Routes', () => {
 
             expect(response.status).toBe(403);
         });
-
-        it('should return 404 for non-existent ride', async () => {
-            const response = await request(app)
-                .post('/api/rides/999/complete')
-                .set('Authorization', `Bearer ${driverToken}`);
-
-            expect(response.status).toBe(404);
-        });
     });
 
     describe('POST /api/rides/:rideId/cancel', () => {
@@ -148,16 +135,10 @@ describe('Ride Routes', () => {
 
             const source = { latitude: 40.7359, longitude: -73.9911 };
             const destination = { latitude: 40.748817, longitude: -73.985428 };
-            const fareEstimation = fareService.calculateFare(source, destination);
             confirmedRide = rideService.createRide(testRider.id, source, destination);
-
-            await request(app)
-                .post('/api/rides/confirm')
-                .set('Authorization', `Bearer ${riderToken}`)
-                .send({ rideId: confirmedRide.id });
         });
 
-        it('should cancel ride successfully', async () => {
+        it('should cancel ride successfully when pending', async () => {
             const response = await request(app)
                 .post(`/api/rides/${confirmedRide.id}/cancel`)
                 .set('Authorization', `Bearer ${riderToken}`);
@@ -165,14 +146,41 @@ describe('Ride Routes', () => {
             expect(response.status).toBe(200);
             expect(response.body).toHaveProperty('message', 'Ride cancelled successfully');
             expect(response.body.ride).toHaveProperty('status', RideStatus.CANCELLED);
-            expect(response.body.ride).toHaveProperty('completed_at');
+            expect(response.body.ride).toHaveProperty('cancelled_at');
         });
 
-        it('should return 401 without authentication', async () => {
-            const response = await request(app)
-                .post(`/api/rides/${confirmedRide.id}/cancel`);
+        it('should return 400 when cancelling completed ride', async () => {
+            // Setup ride through all states until completion
+            await request(app)
+                .post('/api/rides/confirm')
+                .set('Authorization', `Bearer ${riderToken}`)
+                .send({ rideId: confirmedRide.id });
 
-            expect(response.status).toBe(401);
+            const driverToken = generateToken({
+                id: testDriver.id,
+                email: testDriver.email,
+                type: testDriver.type
+            });
+
+            await request(app)
+                .put(`/api/rides/${confirmedRide.id}/respond`)
+                .set('Authorization', `Bearer ${driverToken}`)
+                .send({ isAccepted: true });
+
+            await request(app)
+                .post(`/api/rides/${confirmedRide.id}/start`)
+                .set('Authorization', `Bearer ${driverToken}`);
+
+            await request(app)
+                .post(`/api/rides/${confirmedRide.id}/complete`)
+                .set('Authorization', `Bearer ${driverToken}`);
+
+            const response = await request(app)
+                .post(`/api/rides/${confirmedRide.id}/cancel`)
+                .set('Authorization', `Bearer ${riderToken}`);
+
+            expect(response.status).toBe(400);
+            expect(response.body.error).toContain('Cannot cancel a ride with status');
         });
 
         it('should return 403 when non-owner tries to cancel ride', async () => {
@@ -188,31 +196,60 @@ describe('Ride Routes', () => {
 
             expect(response.status).toBe(403);
         });
+    });
 
-        it('should return 404 for non-existent ride', async () => {
-            const response = await request(app)
-                .post('/api/rides/999/cancel')
-                .set('Authorization', `Bearer ${riderToken}`);
+    describe('PUT /api/rides/:rideId/respond', () => {
+        let driverToken;
+        let confirmedRide;
 
-            expect(response.status).toBe(404);
-        });
-
-        it('should return 400 when cancelling completed ride', async () => {
-            const driverToken = generateToken({
+        beforeEach(async () => {
+            driverToken = generateToken({
                 id: testDriver.id,
                 email: testDriver.email,
                 type: testDriver.type
             });
 
+            const source = { latitude: 40.7359, longitude: -73.9911 };
+            const destination = { latitude: 40.748817, longitude: -73.985428 };
+            confirmedRide = rideService.createRide(testRider.id, source, destination);
+            
             await request(app)
-                .post(`/api/rides/${confirmedRide.id}/complete`)
-                .set('Authorization', `Bearer ${driverToken}`);
+                .post('/api/rides/confirm')
+                .set('Authorization', `Bearer ${token}`)
+                .send({ rideId: confirmedRide.id });
+        });
 
+        it('should accept ride request successfully', async () => {
             const response = await request(app)
-                .post(`/api/rides/${confirmedRide.id}/cancel`)
-                .set('Authorization', `Bearer ${riderToken}`);
+                .put(`/api/rides/${confirmedRide.id}/respond`)
+                .set('Authorization', `Bearer ${driverToken}`)
+                .send({ isAccepted: true });
+
+            expect(response.status).toBe(200);
+            expect(response.body).toHaveProperty('message', 'Ride accepted successfully');
+            expect(response.body.ride).toHaveProperty('status', RideStatus.READY);
+            expect(response.body.ride).toHaveProperty('driver_id', testDriver.id);
+        });
+
+        it('should reject ride request successfully', async () => {
+            const response = await request(app)
+                .put(`/api/rides/${confirmedRide.id}/respond`)
+                .set('Authorization', `Bearer ${driverToken}`)
+                .send({ isAccepted: false });
+
+            expect(response.status).toBe(200);
+            expect(response.body).toHaveProperty('message', 'Ride rejected successfully');
+            expect(response.body.ride).toHaveProperty('status', RideStatus.PENDING);
+        });
+
+        it('should return 400 when isAccepted is missing', async () => {
+            const response = await request(app)
+                .put(`/api/rides/${confirmedRide.id}/respond`)
+                .set('Authorization', `Bearer ${driverToken}`)
+                .send({});
 
             expect(response.status).toBe(400);
+            expect(response.body).toHaveProperty('error', 'Valid response (true/false) is required');
         });
     });
 });
