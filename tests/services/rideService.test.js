@@ -88,7 +88,7 @@ describe('Ride Service', () => {
             const cancelledRide = rideService.cancelRide(ride.id, userId);
 
             expect(cancelledRide.status).toBe(RideStatus.CANCELLED);
-            expect(cancelledRide.completed_at).toBeInstanceOf(Date);
+            expect(cancelledRide.cancelled_at).toBeInstanceOf(Date);
             expect(userService.releaseDriver).toHaveBeenCalledWith(driverId);
         });
 
