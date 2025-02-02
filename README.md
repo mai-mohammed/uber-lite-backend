@@ -104,6 +104,12 @@ Here’s the updated **README** section with the requested structure:
 - `longitude`
 - `timestamp`
 
+### RideRequest (In-Memory)
+- `ride_id`
+- `driver_id`
+- `status`
+- `created_at`
+
 ## APIs
 
 ### User Management
